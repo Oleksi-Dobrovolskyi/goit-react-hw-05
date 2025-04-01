@@ -1,52 +1,36 @@
-import { useState, useEffect } from "react";
-import ContactForm from "../ContactForm/ContactForm";
-import SearchBox from "../SearchBox/SearchBox";
-import ContactList from "../ContactList/ContactList";
-import contactList from "../../assets/contactList.json";
-import styles from "./App.module.css";
+import { Route, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import Navigation from "../Navigation/Navigation";
 
+const HomePage = lazy(() => import("../../pages/HomePage/HomePage"));
+const MoviesPage = lazy(() => import("../../pages/MoviesPage/MoviesPage"));
+const MovieDetailsPage = lazy(() => import("../../pages/MovieDetailsPage/MovieDetailsPage"));
+const MovieCast = lazy(() => import("../MovieCast/MovieCast"));
+const MovieReviews = lazy(() => import("../../components/MovieReviews/MovieReviews"));
+const NotFoundPage = lazy(() => import("../../pages/NotFoundPage/NotFoundPage"));
 
-
-const App = () => {
-  const [contacts, setContacts] = useState(() => {
-    try {
-      const savedContacts = localStorage.getItem("saved-contacts");
-      return savedContacts ? JSON.parse(savedContacts) : contactList;
-    } catch (error) {
-      console.error("Error loading contacts:", error);
-      return contactList;
-    }
-  });
-
-  const [filter, setFilter] = useState("");
-
-  useEffect(() => {
-    localStorage.setItem("saved-contacts", JSON.stringify(contacts));
-  }, [contacts]);
-
-  const addContact = (newContact) => {
-    setContacts((prevContacts) => [...prevContacts, newContact]);
-  };
-
-  const deleteContact = (id) => {
-    setContacts((prevContacts) => prevContacts.filter((contact) => contact.id !== id));
-  };
-
-  const searchContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(filter.toLowerCase())
-  );
-
+function App() {
   return (
-    <div className={styles.div}>
-      <h1 className={styles.title}>Phonebook</h1>
-      <ContactForm onAddContact={addContact} />
-      <SearchBox value={filter} onChange={setFilter} />
-      <ContactList contactList={searchContacts} onDeleteContact={deleteContact} />
+    <div>
+      <Navigation />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/movies" element={<MoviesPage />} />
+          <Route path="/movies/:movieId" element={<MovieDetailsPage />}>
+            <Route path="cast" element={<MovieCast />} />
+            <Route path="reviews" element={<MovieReviews />} />
+          </Route>
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
     </div>
   );
-};
+}
 
 export default App;
+
+
 
 
 
